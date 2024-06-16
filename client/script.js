@@ -1,6 +1,9 @@
 let chatHistory = [];
 let isProcessing = false;
 
+const submitBtn = document.getElementById('submitBtn');
+submitBtn.addEventListener('click', askQuestion)
+
 function askQuestion() {
     if (isProcessing) {
         return;
@@ -19,7 +22,6 @@ function askQuestion() {
     chatHistory.push({ role: 'user', content: userQuery });
 
     // UI adjustments: disable the button and show the spinner
-    const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
 
     const loadingSpinner = document.getElementById('loadingSpinner');
@@ -53,6 +55,7 @@ function askQuestion() {
     })
     .finally(() => {
         // Enable the button and hide the spinner
+        isProcessing = false;
         submitBtn.disabled = false;
         loadingSpinner.style.display = 'none';
     });
