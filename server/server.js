@@ -2,50 +2,72 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-// conectie 
-const { ChatOpenAI } = require("@langchain/openai");
+const fs = require("fs");
 
+const { ChatOpenAI, OpenAIEmbeddings } = require("@langchain/openai");
+const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
+const { MemoryVectorStore } = require("langchain/vectorstores/memory");
+const { PDFLoader } = require("@langchain/community/document_loaders/fs/pdf");
+const { RetrievalQAChain } = require("langchain/chains");
+
+// Express setup
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
 
-function createPrompt(history) {
-    const prompt = history.map(entry => `${entry.role === 'user' ? 'User' : 'Assistant'}: ${entry.content}`).join('\n');
-    return prompt;
+// Load PDF and create vectorstore
+let vectorStore;
+
+async function initializeVectorStore() {
+  const loader = new PDFLoader("./1049-ikea-cao-1-10-2023-tm-31-12-2024-v07022024.pdf");
+  const rawDocs = await loader.load();
+
+  const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 150 });
+  const docs = await splitter.splitDocuments(rawDocs);
+
+  const embeddings = new OpenAIEmbeddings({
+    azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+    azureOpenAIApiVersion: process.env.OPENAI_API_VERSION,
+    azureOpenAIApiInstanceName: process.env.INSTANCE_NAME,
+    azureOpenAIApiDeploymentName: `deploy-text-embedding-ada`,
+  });
+
+  vectorStore = await MemoryVectorStore.fromDocuments(docs, embeddings);
+  console.log("VectorStore initialized from PDF.");
 }
 
-// einde voor chat query
+initializeVectorStore();
+
+// Chat endpoint
 app.post("/chat", async (req, res) => {
-  const { query, history } = req.body;
+  const { query } = req.body;
   console.log("Received query:", query);
 
-// Key's bekijken 
   try {
     const model = new ChatOpenAI({
+      temperature: 0,
       azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
       azureOpenAIApiVersion: process.env.OPENAI_API_VERSION,
       azureOpenAIApiInstanceName: process.env.INSTANCE_NAME,
       azureOpenAIApiDeploymentName: process.env.ENGINE_NAME,
     });
 
-//Dit wordt gebruikt om een prompt te maken voor openAI op basis van de voorgestelde vragen van de gebruiker
-    const prompt = createPrompt(history);
+    const chain = RetrievalQAChain.fromLLM(model, vectorStore.asRetriever(), {
+      returnSourceDocuments: true,
+    });
 
-// Aanroepen van de api van open AI
-    const response = await model.invoke(prompt);
-    console.log("Response from OpenAI:", response.content);
+    const result = await chain.call({ query });
 
-// Antwoord van openAI wordt terug gestuurd naar de client in json. 
-    res.json({ response: response.content });
+    res.json({ response: result.text });
   } catch (error) {
-    console.error("Error invoking ChatGPT:", error);
+    console.error("Error in /chat:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-// Start de server
+// Server start
 app.listen(port, () => {
-  console.log(`Server is running`);
+  console.log(`Server running on http://localhost:${port}`);
 });
