@@ -1,13 +1,12 @@
+
 let chatHistory = [];
 let isProcessing = false;
 
 const submitBtn = document.getElementById('submitBtn');
-submitBtn.addEventListener('click', askQuestion)
+submitBtn.addEventListener('click', askQuestion);
 
-function askQuestion() {
-    if (isProcessing) {
-        return;
-    }
+async function askQuestion() {
+    if (isProcessing) return;
 
     const userQuery = document.getElementById('userQuery').value.trim();
     if (!userQuery) {
@@ -15,48 +14,49 @@ function askQuestion() {
         return;
     }
 
-    // Set processing flag to true
     isProcessing = true;
+    submitBtn.disabled = true;
+    document.getElementById('loadingSpinner').style.display = 'inline-block';
 
-    // Add user query to chat history
     chatHistory.push({ role: 'user', content: userQuery });
 
-    // UI adjustments: disable the button and show the spinner
-    submitBtn.disabled = true;
+    const responseContainer = document.getElementById('responseContainer');
+    responseContainer.innerHTML = `<p><strong>Response:</strong> </p>`;
 
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    loadingSpinner.style.display = 'inline-block';
+    try {
+        const response = await fetch('http://localhost:3000/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: userQuery, history: chatHistory }),
+        });
 
-    // Fetch to server endpoint /chat
-    fetch('http://localhost:3000/chat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query: userQuery, history: chatHistory }),
-    })
-    .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
+            throw new Error('Network response was not ok');
         }
-        return response.json();
-    })
-    .then(data => {
-        // Add assistant response to chat history
-        chatHistory.push({ role: 'assistant', content: data.response });
 
-        // Update UI with response
-        const responseContainer = document.getElementById('responseContainer');
-        responseContainer.innerHTML = `<p><strong>Response:</strong> ${data.response}</p>`;
-    })
-    .catch(error => {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let fullText = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            fullText += chunk;
+
+            responseContainer.innerHTML = `<p><strong>Response:</strong> ${fullText}</p>`;
+        }
+
+        chatHistory.push({ role: 'assistant', content: fullText });
+    } catch (error) {
         console.error('Error fetching response:', error);
         alert('An error occurred while fetching response.');
-    })
-    .finally(() => {
-        // Enable the button and hide the spinner
+    } finally {
         isProcessing = false;
         submitBtn.disabled = false;
-        loadingSpinner.style.display = 'none';
-    });
+        document.getElementById('loadingSpinner').style.display = 'none';
+    }
 }
