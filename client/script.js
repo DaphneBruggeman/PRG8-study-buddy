@@ -1,27 +1,33 @@
-
 let chatHistory = [];
 let isProcessing = false;
 
 const submitBtn = document.getElementById('submitBtn');
+const loadingSpinner = document.getElementById('loadingSpinner');
+const responseContainer = document.getElementById('responseContainer');
+
 submitBtn.addEventListener('click', askQuestion);
 
 async function askQuestion() {
     if (isProcessing) return;
 
-    const userQuery = document.getElementById('userQuery').value.trim();
+    const userQueryInput = document.getElementById('userQuery');
+    const userQuery = userQueryInput.value.trim();
+
     if (!userQuery) {
-        alert('Please enter a study question first!');
+        alert('Vul eerst een vraag in');
         return;
     }
 
     isProcessing = true;
     submitBtn.disabled = true;
-    document.getElementById('loadingSpinner').style.display = 'inline-block';
+    loadingSpinner.style.display = 'inline-block';
 
     chatHistory.push({ role: 'user', content: userQuery });
 
-    const responseContainer = document.getElementById('responseContainer');
-    responseContainer.innerHTML = `<p><strong>Response:</strong> </p>`;
+    responseContainer.innerHTML = `
+        <p><strong>Antwoord:</strong></p>
+        <p><em>Even kijken in het magazijn...</em></p>
+    `;
 
     try {
         const response = await fetch('http://localhost:3000/chat', {
@@ -33,7 +39,7 @@ async function askQuestion() {
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Netwerkfout bij het ophalen van antwoord');
         }
 
         const reader = response.body.getReader();
@@ -47,16 +53,20 @@ async function askQuestion() {
             const chunk = decoder.decode(value, { stream: true });
             fullText += chunk;
 
-            responseContainer.innerHTML = `<p><strong>Response:</strong> ${fullText}</p>`;
+            responseContainer.innerHTML = `
+                <p><strong>Antwoord:</strong></p>
+                <p>${fullText}</p>
+            `;
         }
 
         chatHistory.push({ role: 'assistant', content: fullText });
     } catch (error) {
-        console.error('Error fetching response:', error);
-        alert('An error occurred while fetching response.');
+        console.error('Fout bij ophalen antwoord:', error);
+        alert('Er is iets misgegaan bij het ophalen van het antwoord');
     } finally {
         isProcessing = false;
         submitBtn.disabled = false;
-        document.getElementById('loadingSpinner').style.display = 'none';
+        loadingSpinner.style.display = 'none';
+        userQueryInput.value = '';
     }
 }

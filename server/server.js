@@ -54,7 +54,7 @@ app.post("/chat", async (req, res) => {
 
     const model = new ChatOpenAI({
       temperature: 0,
-      streaming: true, // ✅ streaming aanzetten
+      streaming: true,
       azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
       azureOpenAIApiVersion: process.env.OPENAI_API_VERSION,
       azureOpenAIApiInstanceName: process.env.INSTANCE_NAME,
