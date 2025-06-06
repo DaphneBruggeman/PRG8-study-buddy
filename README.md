@@ -1,7 +1,10 @@
-# Study Buddy
+# IKEA CAO Assistent
 
-De "Study Buddy" is een webapplicatie die studenten helpt met gepersonaliseerde studietips en advies. Het maakt gebruik van de Azure OpenAI API om vragen van studenten te beantwoorden en relevante begeleiding te bieden. De applicatie bestaat uit een client- en servercomponent en biedt een gebruiksvriendelijke interface voor interactie met de AI.
+De **IKEA CAO Assistent** is een gebruiksvriendelijke webapplicatie die medewerkers van IKEA helpt bij het beantwoorden van vragen over de cao. Gebruikers kunnen natuurlijke taal gebruiken om vragen te stellen, en de assistent reageert direct met informatie gebaseerd op de cao-teksten. De applicatie draait op een eigen backend met behulp van de Azure OpenAI API.
 
+> Gebouwd met HTML, CSS, JavaScript en Node.js  
+
+---
 
 ## Inhoud
 
@@ -9,101 +12,70 @@ De "Study Buddy" is een webapplicatie die studenten helpt met gepersonaliseerde 
 - [Gebruik](#gebruik)
 - [Structuur van het project](#structuur-van-het-project)
 - [API Keys en .env bestand](#api-keys-en-env-bestand)
-- [Mogelijke problemen](#mogelijke-problemen)
+- [Veelvoorkomende problemen](#veelvoorkomende-problemen)
+
+---
 
 ## Installatie
 
-Volg deze stappen om het project lokaal op te zetten:
-
-1. Clone de repository:
-    ```bash
-    git clone https://github.com/jouw-gebruikersnaam/study-buddy.git
-    cd study-buddy
-    ```
-
-2. Installeer de benodigde pakketten voor de server:
+1. Clone deze repository:
+   ```bash
+   git clone https://github.com/jouw-gebruikersnaam/ikea-cao-assistent.git
+   cd ikea-cao-assistent
+2. Installeer de dependencies voor de server:
     ```bash
     cd server
     npm install
-    ```
 
-3. Maak een `.env` bestand in de `server` directory en voeg je OpenAI API keys toe:
-    ```
+3. Maak een .env bestand aan in de server map met jouw Azure OpenAI gegevens:
+    ``` bash 
     AZURE_OPENAI_API_KEY=your_api_key_here
     OPENAI_API_VERSION=your_api_version_here
     INSTANCE_NAME=your_instance_name_here
     ENGINE_NAME=your_engine_name_here
-    ```
 
 4. Start de server:
     ```bash
     node server.js
-    ```
 
-5. Open de `index.html` file in de `client` directory in je browser.
+5. Open index.html in de client map via Live Server of een lokale webserver (bijv. VS Code Live Server).
 
 ## Gebruik
 
-1. Voer je vraag in het invoerveld in.
-2. Klik op de knop "Ask a Question".
-3. De server zal de vraag verwerken en een antwoord van de OpenAI API ophalen.
-4. Het antwoord wordt weergegeven in de interface.
+1. Typ een cao-gerelateerde vraag in het invoerveld.Bijv. "Hoeveel vakantiedagen heb ik recht op bij IKEA?"
+
+2. Klik op "Stel je vraag".
+
+3. Het antwoord verschijnt automatisch in de interface, gebaseerd op de ingevoerde vraag en context.
 
 ## Structuur van het project
 
-Het project heeft de volgende structuur:
-
-study-buddy
-├── CLIENT
-│ ├── index.html
-│ ├── script.js
-│ └── style.css
-└── SERVER
-├── .env
-├── .gitignore
-├── server.js
-
-study-buddy
-├── SERVER
-│ ├── .env
-│ ├── .gitignore
-│ ├── server.js
-├── CLIENT
-│ ├── index.html
-│ ├── script.js
-│ ├──style.css
-
-
-- **CLIENT**: Bevat de client-side code van de applicatie.
-  - `index.html`: De HTML-file voor de interface.
-  - `script.js`: De JavaScript-file die verantwoordelijk is voor de logica aan de client-side.
-  - `style.css`: De CSS-file voor de styling van de applicatie.
-
-- **SERVER**: Bevat de server-side code van de applicatie.
-  - `.env`: Bevat de API keys (niet meeverzonden in de repository).
-  - `.gitignore`: Bestanden en mappen die moeten worden genegeerd door git.
-  - `server.js`: De hoofdserverfile.
-  - `package.json`: Bevat de informatie en afhankelijkheden van het project.
+ikea-cao-assistent
+├── client
+│   ├── index.html       # De gebruikersinterface
+│   ├── style.css        # IKEA-geïnspireerde stijl
+│   ├── script.js        # Verwerkt input & toont output
+│   └── assets/
+│       └── ikea_logo.png
+│
+└── server
+    ├── server.js        # Node.js backend met OpenAI-koppeling
+    ├── .env             # Gevoelige API gegevens (lokaal)
+    ├── .gitignore
+    └── package.json
 
 ## API Keys en .env bestand
 
-Zorg ervoor dat je je API keys veilig opslaat in een `.env` bestand in de `server` directory. Dit bestand moet er als volgt uitzien:
+Zorg dat je .env bestand in de server map staat en nooit gedeeld wordt.
 
-OPENAI_API_TYPE=___
-OPENAI_API_VERSION=___
-OPENAI_API_BASE=___
-AZURE_OPENAI_API_KEY=___
-DEPLOYMENT_NAME=___
-ENGINE_NAME=___
-INSTANCE_NAME=___
+Voeg .env altijd toe aan .gitignore zodat je gevoelige data niet op GitHub belandt.
 
-**Let op**: Deel je API keys nooit publiekelijk. Voeg `.env` toe aan je `.gitignore` bestand om te voorkomen dat het wordt gepusht naar GitHub.
+## Veelvoorkomende problemen
 
-## Mogelijke problemen
+CORS-fouten:
 
-- **CORS-fouten**: Als je CORS-gerelateerde fouten krijgt, zorg er dan voor dat de juiste CORS-instellingen zijn geconfigureerd op de server. Voeg bijvoorbeeld de `cors` middleware toe aan je Express-server:
-
-    ```javascript
+Voeg de cors middleware toe in je server.js:
+```bash
     const cors = require("cors");
     app.use(cors());
-    ```
+
