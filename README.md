@@ -51,6 +51,7 @@ De **IKEA CAO Assistent** is een gebruiksvriendelijke webapplicatie die medewerk
 ## Structuur van het project
 
 ikea-cao-assistent
+``` bash
 ├── client
 │   ├── index.html       # De gebruikersinterface
 │   ├── style.css        # IKEA-geïnspireerde stijl
@@ -63,12 +64,21 @@ ikea-cao-assistent
     ├── .env             # Gevoelige API gegevens (lokaal)
     ├── .gitignore
     └── package.json
-
+```
 ## API Keys en .env bestand
 
 Zorg dat je .env bestand in de server map staat en nooit gedeeld wordt.
 
 Voeg .env altijd toe aan .gitignore zodat je gevoelige data niet op GitHub belandt.
+   ```bash
+   OPENAI_API_TYPE=
+   OPENAI_API_VERSION=
+   OPENAI_API_BASE=
+   AZURE_OPENAI_API_KEY= 
+   DEPLOYMENT_NAME=
+   ENGINE_NAME=
+   INSTANCE_NAME=
+```
 
 ## Veelvoorkomende problemen
 
