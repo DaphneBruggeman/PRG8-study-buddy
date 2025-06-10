@@ -2,9 +2,7 @@
 
 De **IKEA CAO Assistent** is een gebruiksvriendelijke webapplicatie die medewerkers van IKEA helpt bij het beantwoorden van vragen over de cao. Gebruikers kunnen natuurlijke taal gebruiken om vragen te stellen, en de assistent reageert direct met informatie gebaseerd op de cao-teksten. De applicatie draait op een eigen backend met behulp van de Azure OpenAI API.
 
-> Gebouwd met HTML, CSS, JavaScript en Node.js  
-
----
+https://stud.hosted.hr.nl/0986809/IKEA-AI/
 
 ## Inhoud
 
