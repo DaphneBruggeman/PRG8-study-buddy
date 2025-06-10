@@ -2,7 +2,6 @@ let chatHistory = [];
 let isProcessing = false;
 
 const submitBtn = document.getElementById('submitBtn');
-const loadingSpinner = document.getElementById('loadingSpinner');
 const responseContainer = document.getElementById('responseContainer');
 
 submitBtn.addEventListener('click', askQuestion);
@@ -20,7 +19,6 @@ async function askQuestion() {
 
     isProcessing = true;
     submitBtn.disabled = true;
-    loadingSpinner.style.display = 'inline-block';
 
     chatHistory.push({ role: 'user', content: userQuery });
 
@@ -30,7 +28,7 @@ async function askQuestion() {
     `;
 
     try {
-        const response = await fetch('http://localhost:3000/chat', {
+        const response = await fetch('https://prg8-study-buddy.onrender.com/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,7 +39,7 @@ async function askQuestion() {
         if (!response.ok) {
             throw new Error('Netwerkfout bij het ophalen van antwoord');
         }
-
+// streamer, woord voor woord
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
         let fullText = '';
@@ -66,7 +64,6 @@ async function askQuestion() {
     } finally {
         isProcessing = false;
         submitBtn.disabled = false;
-        loadingSpinner.style.display = 'none';
         userQueryInput.value = '';
     }
 }

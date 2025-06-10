@@ -4,11 +4,11 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 
+// langchain taal modelen
 const { ChatOpenAI, OpenAIEmbeddings } = require("@langchain/openai");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { MemoryVectorStore } = require("langchain/vectorstores/memory");
 const { PDFLoader } = require("@langchain/community/document_loaders/fs/pdf");
-const { RetrievalQAChain } = require("langchain/chains");
 
 // Express setup
 const app = express();
@@ -17,31 +17,31 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Load PDF and create vectorstore
+// Create vectorstore
 let vectorStore;
 
+// Load PDF
 async function initializeVectorStore() {
   const loader = new PDFLoader("./1049-ikea-cao-1-10-2023-tm-31-12-2024-v07022024.pdf");
   const rawDocs = await loader.load();
-
+// split PDF into smaller chunks
   const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 150 });
   const docs = await splitter.splitDocuments(rawDocs);
-
+// docs/chuncks omzetten vetoren 
   const embeddings = new OpenAIEmbeddings({
     azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
     azureOpenAIApiVersion: process.env.OPENAI_API_VERSION,
     azureOpenAIApiInstanceName: process.env.INSTANCE_NAME,
     azureOpenAIApiDeploymentName: `deploy-text-embedding-ada`,
   });
-
+// opslaan van de documenten in de vectorstore
   vectorStore = await MemoryVectorStore.fromDocuments(docs, embeddings);
   console.log("VectorStore initialized from PDF.");
 }
 
 initializeVectorStore();
 
-// Chat endpoint
-
+// na de vraag stellen
 app.post("/chat", async (req, res) => {
   const { query } = req.body;
   console.log("Received query:", query);
@@ -53,7 +53,6 @@ app.post("/chat", async (req, res) => {
     res.flushHeaders();
 
     const model = new ChatOpenAI({
-      temperature: 0,
       streaming: true,
       azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
       azureOpenAIApiVersion: process.env.OPENAI_API_VERSION,
@@ -64,7 +63,7 @@ app.post("/chat", async (req, res) => {
     const retriever = vectorStore.asRetriever();
     const contextDocs = await retriever.getRelevantDocuments(query);
     const context = contextDocs.map(doc => doc.pageContent).join("\n\n");
-
+// promt enginering 
     const messages = [
       {
         role: "system",
@@ -76,7 +75,7 @@ app.post("/chat", async (req, res) => {
         content: `Context:\n${context}\n\nVraag:\n${query}`,
       },
     ];
-
+// streaming antwoord
     const stream = await model.stream(messages);
 
     for await (const chunk of stream) {
@@ -97,5 +96,5 @@ app.post("/chat", async (req, res) => {
 
 // Server start
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running on :${port}`);
 });
